@@ -19,6 +19,7 @@ package com.directionalviewpager;
 
 import java.util.ArrayList;
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -75,7 +76,7 @@ public class DirectionalViewPager extends ViewPager {
 	private Parcelable mRestoredAdapterState = null;
 	private ClassLoader mRestoredClassLoader = null;
 	private Scroller mScroller;
-	private VerticalViewPagerCompat.DataSetObserver mObserver;
+	private DataSetObserver mObserver;
 
 	private int mChildWidthMeasureSpec;
 	private int mChildHeightMeasureSpec;
@@ -120,12 +121,12 @@ public class DirectionalViewPager extends ViewPager {
 
 	public DirectionalViewPager(Context context) {
 		super(context);
-		initViewPager();
+		init();
 	}
 
 	public DirectionalViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		initViewPager();
+		init();
 
 		// We default to horizontal, only change if a value is explicitly
 		// specified
@@ -135,7 +136,7 @@ public class DirectionalViewPager extends ViewPager {
 		}
 	}
 
-	void initViewPager() {
+	void init() {
 		setWillNotDraw(false);
 		mScroller = new Scroller(getContext());
 		final ViewConfiguration configuration = ViewConfiguration
@@ -167,7 +168,7 @@ public class DirectionalViewPager extends ViewPager {
 
 		if (mAdapter != null) {
 			if (mObserver == null) {
-				mObserver = new DataSetObserver();
+				mObserver = new PagerObserver();
 			}
 			VerticalViewPagerCompat.setDataSetObserver(mAdapter, mObserver);
 			mPopulatePending = false;
@@ -1120,11 +1121,14 @@ public class DirectionalViewPager extends ViewPager {
 		}
 	}
 
-	private class DataSetObserver implements
-			VerticalViewPagerCompat.DataSetObserver {
-		@Override
-		public void onDataSetChanged() {
-			dataSetChanged();
-		}
-	}
+	   private class PagerObserver extends DataSetObserver {
+	        @Override
+	        public void onChanged() {
+	            dataSetChanged();
+	        }
+	        @Override
+	        public void onInvalidated() {
+	            dataSetChanged();
+	        }
+	    }
 }
